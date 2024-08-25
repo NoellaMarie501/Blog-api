@@ -26,7 +26,7 @@ COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 COPY . /var/www
 
 # Copy the existing .env file from the host to the container
-COPY .env /var/www/.env
+COPY .env.example /var/www/.env
 
 
 # Copy the custom PHP-FPM configuration file
@@ -42,6 +42,8 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000
+
+RUN php artisan key:generate
 
 # Start PHP-FPM
 CMD ["php-fpm"]

@@ -35,7 +35,7 @@ COPY www.conf /usr/local/etc/php-fpm.d/www.conf
 # Set the COMPOSER_ALLOW_SUPERUSER environment variable
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-RUN composer install --no-interaction --optimize-autoloader && composer dump-autoload
+RUN composer install  && composer dump-autoload
 
 #give permissions
 RUN chown -R www-data:www-data /var/www \

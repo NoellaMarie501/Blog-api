@@ -1,0 +1,73 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - project_data:/var/www
+      - ./logs/php.log:/var/log/fpm-php.www.log
+      - /nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "9000:9000"
+    expose:
+      - "9000"
+    networks:
+      - blog-api-network
+    depends_on:
+      - db
+      - test_db
+      - nginx
+    #command: php artisan serve --host=0.0.0.0 --port=9000
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    ports: 
+      - "8080:80"
+    networks:
+      - blog-api-network
+    volumes:
+      - project_data:/var/www
+      - ./logs/nginx:/var/log/nginx/
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - blog-api-network
+
+  test_db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: laravel_test
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - test_db_data:/var/lib/mysql
+    networks:
+      - blog-api-network
+
+networks:
+  blog-api-network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  test_db_data:
+    driver: local
+  project_data:
+    driver: local

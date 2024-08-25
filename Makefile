@@ -67,7 +67,10 @@ root-nginx:
 test-dev: 
 	docker exec -it -u root $$(docker-compose --project-name $(PROJECT_NAME) ps -q app) /bin/bash -c 'php artisan test'
 
-test: build test-dev
+test: build 
+	docker exec -u root $$(docker-compose --project-name $(PROJECT_NAME) ps -q app) sh -c 'php artisan test'
+	docker exec -u root $$(docker-compose --project-name $(PROJECT_NAME) -f docker-compose_test.yml ps -q app) sh -c "./vendor/bin/codecept run"
+	
 
 clean: stop
 	docker-compose --project-name $(PROJECT_NAME) down --remove-orphans

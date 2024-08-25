@@ -70,7 +70,7 @@ test-dev:
 test1: build 
 	docker exec -u root $$(docker-compose --project-name $(PROJECT_NAME) ps -q app) sh -c 'php artisan test'
 	
-test: 
+test: dev
 	php artisan test
 	
 

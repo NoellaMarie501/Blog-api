@@ -1,0 +1,45 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main", 'develop', 'Base-seteup-with-docker']
+  pull_request:
+    branches: [main", 'develop', 'Base-seteup-with-docker']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          tools: composer
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Run tests on develop branch
+        if: |
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/Base-seteup-with-docker'
+        run: make test
+
+      - name: Deploy acceptance
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/Base-seteup-with-docker'
+        run: make deploy-acceptance 
+      
+      - name: Deploy staging
+        if: github.ref == 'refs/heads/release/'
+        run: make deploy-staging 
+
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: make deploy-production 

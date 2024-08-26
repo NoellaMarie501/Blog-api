@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - project_data:/var/www
+      - .:/var/www
       - ./logs/php.log:/var/log/fpm-php.www.log
       - /nginx/default.conf:/etc/nginx/conf.d/default.conf
     ports:
@@ -43,6 +43,7 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - blog-api-network
 
@@ -57,6 +58,7 @@ services:
       - "3307:3306"
     volumes:
       - test_db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - blog-api-network
 

@@ -2,6 +2,8 @@ ROOT_DIR       := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SHELL          := $(shell which bash)
 PROJECT_NAME    = blog-api
 ARGS            = $(filter-out $@,$(MAKECMDGOALS))
+USER_ID 		:= 		  $(shell id -u)
+GROUP_ID 		:=  $(shell id -g)
 
 .SILENT: ;               # no need for @
 .ONESHELL: ;             # recipes execute in same shell
@@ -28,7 +30,7 @@ help-default help: .title
 	@echo ""
 
 build:
-	docker-compose --project-name $(PROJECT_NAME) build
+	docker-compose --project-name $(PROJECT_NAME) build --build-arg USER_ID=$(USER_ID) --build-arg GROUP_ID=$(GROUP_ID)
 
 deploy-acceptance:
 	echo "Deploying to acceptance"
@@ -88,6 +90,8 @@ ping-app:
 
 ping-nginx: 
 	docker-compose exec app ping nginx
-
+cleanall: 
+	docker system prune
+restart: down dev
 %:
 	@:

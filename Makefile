@@ -73,8 +73,7 @@ test1: build
 	docker exec -u root $$(docker-compose --project-name $(PROJECT_NAME) ps -q app) sh -c 'php artisan test'
 
 composer: down dev
-    docker-compose exec -T app ls -la /var/www
-	docker-compose exec -T app composer install
+	docker-compose exec -T -u www-data app composer install
 
 test: 
 	sleep 2

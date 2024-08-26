@@ -74,7 +74,6 @@ test1: build
 
 composer: down dev
     docker-compose exec -T app ls -la /var/www
-
 	docker-compose exec -T app composer install
 
 test: 

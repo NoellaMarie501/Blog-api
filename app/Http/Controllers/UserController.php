@@ -2,129 +2,106 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\UserServiceInterface;
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Repositories\PostRepositoryInterface;
-use App\Repositories\UserRepository;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log; // Import Log facade
 use Throwable;
 
 class UserController extends Controller
 {
-    /**
-     * Repository object
-     * 
-     * @var UserRepository $userRepository
-     */
-    protected $userRepository;
+    protected $userService;
 
-    /**
-     * @param UserRepository $userRepository
-     */
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserServiceInterface $userService)
     {
-        $this->userRepository = $userRepository;
+        $this->userService = $userService;
     }
 
-    /**
-     * Registration Request
-     *
-     * @param  Request  $request
-     * @return  \Illuminate\Http\JsonResponse
-     */
     public function register(Request $request)
     {
-        $this->validate($request, [
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|min:6',
+            ]);
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password)
-        ];
-        $user = $this->userRepository->create($data);
+            $user = $this->userService->registerUser($validatedData);
 
-        return response()->json(['user created' => $user], 200);
+            return response()->json(['user created' => $user], 200);
+        } catch (Throwable $e) {
+            Log::error('Error registering user: ' . $e->getMessage(), [
+                'trace' => $e->getTrace(),
+                'data' => $request->all()
+            ]);
+            return response()->json(['message' => 'Failed to register user: '. $e->getMessage()], 400);
+        }
     }
 
-    /**
-     * Login Request
-     *
-     * @param  Request  $request
-     * @return  \Illuminate\Http\JsonResponse
-     */
     public function login(Request $request)
     {
-        try {
+        $credentials = $request->only(['email', 'password']);
 
-            $user = [
-                'email' => $request->email,
-                'password' => $request->password
-            ];
-            if (auth()->attempt($user)) {
-                $user = $this->userRepository->findEmail($user['email']);
-                $token = $user->createToken('Laravel Personal Access Client')->accessToken;
-                return response()->json(['token' => $token], 200);
-            } else {
-                return response()->json(['error' => 'UnAuthorised'], 401);
-            }
+        try {
+            $token = $this->userService->loginUser($credentials);
+            return response()->json(['token' => $token], 200);
         } catch (Throwable $e) {
-            return response()->json(['mesage' => $e->getMessage(), 'trace' => $e->getTrace(), 'error' => $e], 400);
+            Log::error('Error logging in user: ' . $e->getMessage(), [
+                'trace' => $e->getTrace(),
+                'credentials' => $credentials
+            ]);
+            return response()->json(['message' => 'Failed to log in: '. $e->getMessage()], 401);
         }
     }
 
-    /**
-     * Updates user
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function updatePassword(Request $request)
     {
+        $data = $request->only(['name', 'email', 'password']);
+        $userId = Auth::id();
+
         try {
-            $data = $request->only(['name', 'email', 'password']);
-            $id = Auth::id();
-            if (isset($data['password'])) {
-                $data['password'] = bcrypt($data['password']);
-            }
-            $user = $this->userRepository->update($id, $data);
+            $user = $this->userService->updatePassword($userId, $data);
             return response()->json(['user' => $user], 200);
         } catch (Throwable $e) {
-            return response()->json(['mesage' => $e->getMessage(), 'trace' => $e->getTrace(), 'error' => $e], 400);
+            Log::error('Error updating password: ' . $e->getMessage(), [
+                'trace' => $e->getTrace(),
+                'data' => $data,
+                'user_id' => $userId
+            ]);
+            return response()->json(['message' => 'Failed to update password: '. $e->getMessage()], 400);
         }
     }
 
-    /**
-     * Returns Authenticated User Record
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function userRecord()
     {
-        $user = $this->userRepository->find(Auth::id());
-        //return var_dump('user', $user);
-        return response()->json(['user' => $user], 200);
+        try {
+            $userId = Auth::id();
+            $user = $this->userService->getUserRecord($userId);
+
+            return response()->json(['user' => $user], 200);
+        } catch (Throwable $e) {
+            Log::error('Error fetching user record: ' . $e->getMessage(), [
+                'trace' => $e->getTrace(),
+                'user_id' => Auth::id()
+            ]);
+            return response()->json(['message' => 'Could not get user record: '. $e->getMessage()], 400);
+        }
     }
 
-    /**
-     * Log out user
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function logOut(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        // Revoke all tokens for the user
-        $tokens = $user->tokens;
-        foreach ($tokens as $token) {
-            $token->revoke();
+            $this->userService->logOutUser($user);
+
+            return response()->json(['message' => 'Successfully logged out from all sessions']);
+        } catch (Throwable $e) {
+            Log::error('Error logging out user: ' . $e->getMessage(), [
+                'trace' => $e->getTrace(),
+                'user_id' => $request->user()->id
+            ]);
+            return response()->json(['message' => 'Failed to logout user: '. $e->getMessage()], 400);
         }
-
-        return response()->json([
-            'message' => 'Successfully logged out from all sessions'
-        ]);
     }
 }

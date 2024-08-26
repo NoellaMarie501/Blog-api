@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", 'develop', 'Base-seteup-with-docker']
+    branches: [ "main", 'develop', 'Base-seteup-with-docker', write-unit-tests]
   pull_request:
-    branches: [main", 'develop', 'Base-seteup-with-docker']
+    branches: [main", 'develop', 'Base-seteup-with-docker', write-unit-tests]
 
 jobs:
   build:
@@ -27,7 +27,8 @@ jobs:
         if: |
           github.ref == 'refs/heads/main' ||
           github.ref == 'refs/heads/develop' ||
-          github.ref == 'refs/heads/Base-seteup-with-docker'
+          github.ref == 'refs/heads/Base-seteup-with-docker'||
+          github.ref == 'refs/heads/write-unit-tests'
         run: make test
 
       - name: Deploy acceptance

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -15,7 +16,12 @@ class UserRepository implements UserRepositoryInterface
 
     public function find($id)
     {
-        return $this->model->findOrFail($id);
+        try {
+            return $this->model->findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            // Handle the exception, log it, or rethrow it
+            throw new \Exception("Post not found", 404); // You can customize the exception message or code
+        }
     }
 
     public function findEmail($email)

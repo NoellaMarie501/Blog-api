@@ -72,8 +72,11 @@ test-dev:
 test1: build 
 	docker exec -u root $$(docker-compose --project-name $(PROJECT_NAME) ps -q app) sh -c 'php artisan test'
 
-test-build: down dev	
+composer: down dev
+	docker-compose exec -T app composer install
+
 test: 
+	sleep 2
 	docker-compose exec -T app php artisan test
 	
 

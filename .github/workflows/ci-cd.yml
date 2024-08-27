@@ -30,6 +30,13 @@ jobs:
           github.ref == 'refs/heads/Base-seteup-with-docker'||
           github.ref == 'refs/heads/write-unit-tests'
         run: make composer
+      - name: Wait for MySQL to be ready
+        run: |
+          until docker exec -T test_db mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1"; do
+            >&2 echo "MySQL is unavailable - sleeping"
+            sleep 5
+          done
+          >&2 echo "MySQL is up - executing command"
 
       - name: Run tests on develop branch
         if: |

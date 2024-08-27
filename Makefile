@@ -76,6 +76,7 @@ composer: down dev
 	docker-compose exec -T -u root app composer install
 
 test: 
+
 	docker-compose exec -T -u root  app php artisan test
 	
 

@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Post;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PostRepository implements PostRepositoryInterface
 {
@@ -15,7 +16,23 @@ class PostRepository implements PostRepositoryInterface
 
     public function find($id)
     {
-        return $this->model->findOrFail($id);
+        try {
+            return $this->model->findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            // Handle the exception, log it, or rethrow it
+            throw new \Exception("Post not found", 404); // You can customize the exception message or code
+        }
+    }
+
+
+    public function findByIdAndUser($user_id, $post_id)
+    {
+        return $this->model->where('id', $post_id)->where('user_id', $user_id)->get();
+    }
+
+    public function findByUser($user_id)
+    {
+        return $this->model->where('user_id', $user_id)->get();
     }
 
     public function all()

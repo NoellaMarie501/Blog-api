@@ -35,7 +35,7 @@ jobs:
         run: sudo /etc/init.d/mysql start
 
       - name: Create test database
-        run: mysql -uroot -proot < test-init.sql
+        run: mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS laravel_test;"
 
       - name: Run tests on develop branch
         if: |

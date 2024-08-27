@@ -77,7 +77,7 @@ composer: down dev
 
 test: 
 	docker ps
-	docker-compose exec -T -u root  app php artisan test
+	docker-compose exec -T  app php artisan test
 	
 
 clean: stop

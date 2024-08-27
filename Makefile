@@ -81,11 +81,10 @@ composer: down dev
 	docker-compose exec -T -u root app composer install
 
 test: 
-    docker ps
-    docker-compose exec -T app php artisan config:clear
-    docker-compose exec -T -u root app php artisan migrate --env=testing --force
+	docker ps
+	docker-compose exec -T  app php artisan config:clear
+	docker-compose exec -T -u root app php artisan migrate --env=testing --force
     docker-compose exec -T -u root app php artisan test --env=testing
-
 	
 
 clean: stop

@@ -81,11 +81,9 @@ composer: down dev
 	docker-compose exec -T -u root app composer install
 
 test: 
-	docker ps
-	docker-compose exec -T  app php artisan config:clear
+	docker-compose exec -T app php artisan config:clear
 	docker-compose exec -T -u root app php artisan migrate --env=testing --force
-    docker-compose exec -T -u root app php artisan test --env=testing
-	
+	docker-compose exec -T -u root app php artisan test --env=testing
 
 clean: stop
 	docker-compose --project-name $(PROJECT_NAME) down --remove-orphans

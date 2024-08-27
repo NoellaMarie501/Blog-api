@@ -32,7 +32,7 @@ jobs:
         run: make composer
       - name: Wait for MySQL to be ready
         run: |
-          until docker exec -T test_db mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1"; do
+          until docker-compose  -T test_db mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1"; do
             >&2 echo "MySQL is unavailable - sleeping"
             sleep 5
           done

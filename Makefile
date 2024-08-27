@@ -77,6 +77,7 @@ composer: down dev
 
 test: 
 	docker ps
+	php artisan config:clear
 	docker-compose exec -T  app php artisan test
 	
 
